@@ -1,0 +1,6 @@
+__pycache__/
+README.md
+.idea/
+hangman.sqlite
+ReDi_Backend_Project/
+venv/
