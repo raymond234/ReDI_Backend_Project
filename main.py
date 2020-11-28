@@ -1,6 +1,7 @@
 import random
 import requests
 from Game import Game
+from User import User
 
 HANGMAN_PICS = ['''
 
@@ -129,12 +130,15 @@ def playAgain():
     return input().lower().startswith('y')
 
 
-def main():
-    game = Game(secretWord="me", hint="they")
+if __name__ == "__main__":
+    user = User()
+    user.create_user()
+    username = user.username
+    game = Game(username)
     print('|_H_A_N_G_M_A_N_|')
-    correctLetters = ''
-    missedLetters = ''
-    secretWord = getRandomWord(words)
+    correctLetters = game.correctletters
+    missedLetters = game.missedletters
+    secretWord = game.secretWord
     specialChar = []
     specialChar.append(game.update_special_char())
     gameIsDone = False
@@ -146,32 +150,34 @@ def main():
     # Let the player enter a letter:
         guess = getGuess(missedLetters + correctLetters)
 
-
         if guess in secretWord:
             correctLetters = correctLetters + guess
         # Check to see if the player has won:
             foundAllLetters = True
-            for i in range(len(secretWord)):
-                if secretWord[i] not in correctLetters:
+            string = secretWord.replace(" ", "")
+            for i in range(len(string)):
+                if string[i] not in correctLetters:
                     foundAllLetters = False
                     break
             if foundAllLetters:
                 print('You guessed it!')
                 print('The secret word is "' + secretWord + '"! You win!')
                 gameIsDone = True
-        if guess == "#":
+
+        elif guess == "#":
             print("Get hint.")
-            game.get_hint()  # Somehow figure out how to make display board display hint.
+            # game.get_hint()  # Somehow figure out how to make display board display hint.
             # This function call above persists the hint getting in the database by flipping self.got_hint
             # So that even if game is saved and retrieved. Hint continues getting displayed.
             print("Make display board continue displaying hint till game is done.")
             specialChar += "#"
 
-        ##    hint =
-        if guess == "*":
+        elif guess == "*":
             print("Print goodbye message. Exit.")
+            print("Updating game.")
+            game.update_fields_intermediate(missedLetters, correctLetters, game.is_done)
             specialChar += "*"
-
+            exit()
 
         else:
             missedLetters = missedLetters + guess
@@ -180,16 +186,24 @@ def main():
             if len(missedLetters) == len(HANGMAN_PICS)-1:
                 displayBoard(missedLetters, correctLetters, specialChar, secretWord)
                 print('You have run out of guesses!\nAfter ' + str(len(missedLetters)) + ' missed guesses and ' + str(len(correctLetters)) + ' correct guesses, the word was "' + secretWord + '"')
+                game.is_won = True
                 gameIsDone = True
 
     # If the game is done, ask the player to try again.
         if gameIsDone:
+            game.is_done = True
+            game_score = 0
+            print(correctLetters)
+            game.update_fields_end(missedLetters, correctLetters, game_score, game.is_done, game.is_won)
             if playAgain():
-                missedLetters = ''
-                correctLetters = ''
+                print('|_H_A_N_G_M_A_N_|')
+                game = Game(username)
+                correctLetters = game.correctletters
+                missedLetters = game.missedletters
+                secretWord = game.secretWord
+                specialChar = []
+                specialChar.append(game.update_special_char())
                 gameIsDone = False
-                secretWord = getRandomWord(words)
             else:
                 break
 
-main()
