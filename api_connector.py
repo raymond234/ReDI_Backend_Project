@@ -1,5 +1,6 @@
 import requests
 import json
+import re
 
 
 class ApiConnector:
@@ -35,8 +36,10 @@ class ApiConnector:
             "GET", self.url, headers=self.headers, params=querystring)
         result = json.loads(response.text)
         search_key = "results"
+        word = result['word']
+        pattern = "[a-zA-Z\s]+$"
 
-        if search_key in result and result['word'].is_alpha():
+        if search_key in result and re.match(pattern, word):
             self.entry = result
         else:
             self.get_entry()

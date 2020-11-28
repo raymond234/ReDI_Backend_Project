@@ -21,7 +21,7 @@ def create_new_game(username):
     secret_word = obj.get_word()
     hint = obj.get_definition()
     new_game = Game(secret_word=secret_word, hint=hint, got_hint=0, missed_letters="", correct_letters="", game_score=0,
-                    is_done=0, game_won=0, last_saved=datetime.datetime.now(), username=username)
+                    is_done=0, is_won=0, last_saved=datetime.datetime.now(), username=username)
     db.session.add(new_game)
     db.session.commit()
     return new_game
@@ -32,18 +32,25 @@ def get_user(username):  # return User.query.filter_by(username=username).first(
     return result
 
 
-def get_game(game_id):
-    return db.session.query(Game).filter_by(id=game_id).first()
+def get_new_game(username):
+    return db.session.query(Game).filter_by(username=username).order_by(Game.id.desc()).first()
 
 
-def update_game(game_id, fields):
+# def get_game(game_id):
+#     return db.session.query(Game).filter_by(id=game_id).first()
+
+
+def get_game(username, secret_word):
+    return db.session.query(Game).filter_by(username=username).filter_by(secret_word=secret_word).first()
+
+
+def update_game(username, secret_word, fields):
     # Has to encompass situations involving loading a saved game and saving it back later without completing it.
     # And also encompass situations saving the game finally after it is completed.
     # All this will probably be coded in the client side.
+    # Above covers the fields that will appear in the Flask app.
 
-    # Above covers the fields that will appear in the Flask app
-
-    result = db.session.query(Game).filter_by(id=game_id).update(fields)
+    result = db.session.query(Game).filter_by(username=username).filter_by(secret_word=secret_word).update(fields)
     db.session.commit()
     return result
 

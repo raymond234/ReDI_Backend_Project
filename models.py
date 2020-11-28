@@ -2,7 +2,6 @@ import datetime
 from init import db
 from passlib.apps import custom_app_context as pwd_context
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import deferred
 
 
 class Serializer(object):
@@ -25,7 +24,7 @@ class Game(db.Model, Serializer):
     __tablename__ = "games_table"
     __table_args__ = (
         db.CheckConstraint("games_table.is_done IN (0, 1)", name='check1'),
-        db.CheckConstraint("games_table.game_won IN (0, 1)", name='check2'),
+        db.CheckConstraint("games_table.is_won IN (0, 1)", name='check2'),
         db.CheckConstraint("games_table.got_hint IN (0, 1)", name='check3'),
         {"extend_existing": True}
     )
@@ -38,7 +37,7 @@ class Game(db.Model, Serializer):
     correct_letters = db.Column(db.String(128))
     game_score = db.Column(db.Integer)
     is_done = db.Column(db.SMALLINT)
-    game_won = db.Column(db.SMALLINT)
+    is_won = db.Column(db.SMALLINT)
     last_saved = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
     username = db.Column(db.String(32), db.ForeignKey('users_table.username'), nullable=False)
 
@@ -53,7 +52,7 @@ class User(db.Model, Serializer):
     hashed_password = db.Column(db.String(128), nullable=False)
     games = db.relationship('Game', backref='game', lazy=True)
     total_played = db.column_property(db.select([db.func.count(Game.id)]).where(Game.username == username))
-    total_won = db.column_property(db.select([db.func.count(Game.id)]).where(db.and_(Game.username == username, Game.game_won == 1)))
+    total_won = db.column_property(db.select([db.func.count(Game.id)]).where(db.and_(Game.username == username, Game.is_won == 1)))
     total_game_scores = db.column_property(db.select([db.func.sum(Game.game_score)]).where(Game.username == username))
     win_percentage = db.column_property(((total_won.expression * 1.0) / total_played.expression) * 100.0)
 
