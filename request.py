@@ -7,7 +7,6 @@ from init import app
 import function
 # import utils
 from models import User
-import json
 from flask_httpauth import HTTPBasicAuth
 auth = HTTPBasicAuth()
 
@@ -70,18 +69,17 @@ def create_game(username):
 def update_retrieve_game(username, secret_word, is_done):
     logging.info(f'User has given input secret_word as: {secret_word}')
     logging.info(f'User has given input username as: {username}')
+
     game_result = function.get_game(username, secret_word)
     if request.method == 'GET':
         return jsonify(game_result.serialize())  # I don't know if I need to present them serialized to my gameplay..
 
     if request.method == 'PATCH':
         data = request.json
-        print(data)
-        print(data["missed_letters"])
-
+        is_done = data["is_done"]
         if is_done:
             try:
-                fields = {'missed_letters': data["missed_letters"], 'correct_letters': data["correct_letters"],
+                fields = {'got_hint': data["got_hint"], 'missed_letters': data["missed_letters"], 'correct_letters': data["correct_letters"],
                           'game_score': data["game_score"], 'is_done': data["is_done"],
                           'is_won': data["is_won"], 'last_saved': datetime.now()}
                 logging.info(fields)
@@ -91,13 +89,14 @@ def update_retrieve_game(username, secret_word, is_done):
                 return make_response(jsonify(error='Bad request'), 400)
         else:
             try:
-                fields = {'missed_letters': data['missed_letters'],
+                print(data)
+                fields = {'got_hint': data["got_hint"], 'missed_letters': data['missed_letters'],
                           'correct_letters': data['correct_letters'], 'last_saved': datetime.now()}
                 logging.info(fields)
                 function.update_game(username, secret_word, fields)
                 return jsonify(response='OK')
             except (sqlalchemy.exc.InvalidRequestError, KeyError):
-                return make_response(jsonify(error='Bad request'), 400)
+                return make_response(jsonify(error='Bad request'), 405)
 
 
 @app.route('/User/<username>/rankings', methods=['GET'])
