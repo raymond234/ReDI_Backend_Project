@@ -13,3 +13,6 @@ class User:
 
     def get_user(self):
         pass
+
+    def get_saved_games(self):
+        pass
