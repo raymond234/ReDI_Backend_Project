@@ -1,9 +1,10 @@
 # ReDI_Backend_Project: Hangman built with Python and Flask.
 
 Frontend: Python. Console. 
-Location: main:Hangman_Logic
+Location: main:Hangman_Logic.
 
-Backend: Python, Flask, SQLAlchemy(SQLite)
+
+Backend: Python, Flask, SQLAlchemy(SQLite).
 Location: main:Flask_Backend
 
 Short Description: 
